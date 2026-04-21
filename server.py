@@ -4,15 +4,23 @@ from typing import Any
 import requests
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("Meeting Operations", json_response=True)
-
+HOST = "0.0.0.0"
+PORT = int(os.getenv("PORT", "10000"))
 MAKE_WEBHOOK = os.getenv("MAKE_WEBHOOK", "")
+
+mcp = FastMCP(
+    "Meeting Operations",
+    json_response=True,
+    host=HOST,
+    port=PORT,
+)
+
 
 def post_json(url: str, payload: dict[str, Any]) -> dict[str, Any]:
     if not url:
         return {
             "ok": False,
-            "error": "Webhook URL is empty. Set env var first."
+            "error": "MAKE_WEBHOOK is empty. Set it in environment variables.",
         }
 
     try:
@@ -33,13 +41,17 @@ def post_json(url: str, payload: dict[str, Any]) -> dict[str, Any]:
 def create_bitrix_tasks(
     meeting_date: str,
     meeting_title: str,
-    tasks: list[dict[str, Any]]
+    tasks: list[dict[str, Any]],
 ) -> dict[str, Any]:
+    """
+    Создать обычные задачи в Bitrix24 через Make.
+    Передаёт в Make meeting_date, meeting_title и массив tasks.
+    """
     payload = {
         "meeting_date": meeting_date,
         "meeting_title": meeting_title,
         "tasks": tasks,
-        "unassigned_tasks": []
+        "unassigned_tasks": [],
     }
     return post_json(MAKE_WEBHOOK, payload)
 
@@ -48,13 +60,17 @@ def create_bitrix_tasks(
 def send_unassigned_to_maxim(
     meeting_date: str,
     meeting_title: str,
-    unassigned_tasks: list[dict[str, Any]]
+    unassigned_tasks: list[dict[str, Any]],
 ) -> dict[str, Any]:
+    """
+    Отправить спорные задачи в Make.
+    Дальше Make сам направит их по своей ветке.
+    """
     payload = {
         "meeting_date": meeting_date,
         "meeting_title": meeting_title,
         "tasks": [],
-        "unassigned_tasks": unassigned_tasks
+        "unassigned_tasks": unassigned_tasks,
     }
     return post_json(MAKE_WEBHOOK, payload)
 
