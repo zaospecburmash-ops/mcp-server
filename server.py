@@ -5,7 +5,7 @@ import requests
 from mcp.server.fastmcp import FastMCP
 
 HOST = "0.0.0.0"
-PORT = int(os.getenv("PORT", "10000"))
+PORT = int(os.getenv("PORT", "8080"))
 MAKE_WEBHOOK = os.getenv("MAKE_WEBHOOK", "")
 
 mcp = FastMCP(
